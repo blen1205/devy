@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Inventory Delivery Management System</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                dark: "#0d1b3e",
+                darker: "#070f24",
+                accent: "#2563eb",
+              }
+            }
+          }
+        }
+      };
+    </script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+  <body class="bg-[#f4f7fe] dark:bg-slate-900 font-sans text-gray-800 dark:text-slate-100 antialiased flex h-screen w-screen overflow-hidden transition-colors duration-300 relative">
+
+    <!-- MOBILE SIDEBAR OVERLAY BACKGROUND -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden transition-opacity duration-300"></div>
+
+    <!-- LEFT SIDEBAR (Original Colors Restored) -->
+    <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-64 bg-[#0d1b3e] dark:bg-slate-950 text-white flex flex-col justify-between flex-shrink-0 h-full shadow-2xl md:shadow-xl z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 border-r border-transparent dark:border-slate-800">
+      <div class="overflow-y-auto overflow-x-hidden flex-1 flex flex-col">
+        
+        <!-- Logo Header with Top-Left Toggle Button -->
+        <div class="p-3.5 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 relative flex items-center justify-between">
+          <button id="btn-toggle-collapse" class="text-gray-600 dark:text-slate-300 hover:text-blue-600 p-1.5 rounded-lg focus:outline-none transition flex-shrink-0" title="Toggle Sidebar">
+            <i class="fa-solid fa-bars-staggered text-sm"></i>
+          </button>
+          <img id="sidebar-logo" src="logo2.png" alt="Logo" class="h-10 mx-auto object-contain transition-all duration-300" />
+        </div>
+
+        <!-- DYNAMIC NAVIGATION TABS -->
+        <nav id="dynamic-nav" class="px-2 py-4 space-y-1 text-xs flex-1 mt-2">
+          <!-- Kusang mako-configure batay sa nakalogin -->
+        </nav>
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div class="p-3 border-t border-blue-900/50 dark:border-slate-800 flex justify-around items-center bg-[#070f24] dark:bg-slate-950">
+        <button id="btn-settings" class="p-2 text-blue-300 dark:text-slate-400 hover:text-white transition" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+        <button id="btn-logout" class="p-2 text-blue-300 dark:text-slate-400 hover:text-red-400 transition" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
+
+      <!-- TOP HEADER BAR -->
+      <header class="bg-white dark:bg-slate-950 text-gray-800 dark:text-white h-16 px-4 sm:px-6 flex items-center justify-between shadow-sm sticky top-0 z-20 flex-shrink-0 transition-colors duration-300 border-b border-gray-200 dark:border-slate-800">
+        <div class="flex items-center space-x-3">
+          <!-- Mobile Menu Trigger Button -->
+          <button id="btn-mobile-menu" class="md:hidden text-gray-600 dark:text-slate-300 hover:text-blue-600 p-2 rounded-lg focus:outline-none transition" title="Open Menu">
+            <i class="fa-solid fa-bars text-base"></i>
+          </button>
+          <span class="font-bold text-xs sm:text-base text-slate-800 dark:text-white truncate">Online Inventory Delivery Management System</span>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-4 relative">
+          
+          <!-- EMAIL / MESSAGES ICON & DROPDOWN -->
+          <div class="relative">
+            <button id="btn-email-notif" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 active:scale-95 transition focus:outline-none" title="School Orders Emails">
+              <i class="fa-solid fa-envelope text-sm"></i>
+            </button>
+            <div id="dropdown-email" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-4 z-50 text-xs">
+              <div class="font-bold border-b pb-2 mb-2 text-slate-800 dark:text-white flex justify-between items-center">
+                <span>School Order Emails</span>
+                <span class="text-[10px] text-gray-400 font-normal">Inbox</span>
+              </div>
+              <div class="text-gray-400 italic py-4 text-center">
+                Wala pang natatanggap na email mula sa mga umorder na school. (Frontend mode)
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTIFICATIONS BELL ICON & DROPDOWN -->
+          <div class="relative">
+            <button id="btn-alerts-notif" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 active:scale-95 transition focus:outline-none" title="Pending & Delivered Updates">
+              <i class="fa-solid fa-bell text-sm"></i>
+            </button>
+            <div id="dropdown-alerts" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-4 z-50 text-xs">
+              <div class="font-bold border-b pb-2 mb-2 text-slate-800 dark:text-white flex justify-between items-center">
+                <span>Pending & Delivered Status</span>
+                <span class="text-[10px] text-gray-400 font-normal">System Alerts</span>
+              </div>
+              <div class="text-gray-400 italic py-4 text-center">
+                Wala pang pending o delivered updates na naitatala sa sistema. (Frontend mode)
+              </div>
+            </div>
+          </div>
+
+          <!-- Dark Mode Toggle -->
+          <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-amber-500 hover:bg-gray-200 dark:hover:bg-slate-700 active:scale-95 transition focus:outline-none" title="Toggle Theme">
+            <i id="theme-toggle-dark-icon" class="fa-solid fa-moon text-sm hidden"></i>
+            <i id="theme-toggle-light-icon" class="fa-solid fa-sun text-sm hidden"></i>
+          </button>
+
+          <!-- User Profile -->
+          <div class="flex items-center space-x-2 border-l pl-3 sm:pl-4 border-gray-200 dark:border-slate-800">
+            <div id="user-avatar" class="w-8 h-8 bg-blue-600 text-white font-bold text-xs rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+              --
+            </div>
+            <div class="text-xs font-semibold hidden sm:block">
+              <span>Hi, </span>
+              <span id="header-user-name" class="font-extrabold uppercase tracking-wide text-blue-600 dark:text-blue-400">--</span>
+              <span id="header-user-role" class="text-gray-400 text-[10px] block font-normal">(--)</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD WORKSPACE CONTENT -->
+      <main class="p-4 sm:p-6 space-y-6 flex-1">
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Dashboard Overview & System Monitoring</h1>
+            <div class="flex items-center space-x-2">
+              <select id="year-filter" class="bg-white dark:bg-slate-800 dark:text-white border border-gray-300 dark:border-slate-700 rounded-lg text-xs px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <option value="2026-2027">2026-2027</option>
+                <option value="2025-2026">2025-2026</option>
+              </select>
+              <button id="btn-apply-filter" class="bg-[#2563eb] hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition">
+                Go!
+              </button>
+            </div>
+          </div>
+
+          <!-- METRIC CARDS -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+            <!-- Left Side: Original 4 Cards (Span 7 Columns) -->
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-indigo-700 text-white flex items-center justify-center shadow-md font-bold text-sm">₱</div>
+                <div class="pt-2 pl-1">
+                  <div class="text-[11px] text-gray-400 font-medium">Business Value</div>
+                  <div class="text-lg font-bold text-slate-800 dark:text-white mt-0.5">₱ 0.00</div>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-truck"></i></div>
+                <div class="pt-2 pl-1">
+                  <div class="text-[11px] text-gray-400 font-medium">Delivery Percentage</div>
+                  <div class="text-lg font-bold text-slate-800 dark:text-white mt-0.5">0 %</div>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-rotate-left"></i></div>
+                <div class="pt-2 pl-1">
+                  <div class="text-[11px] text-gray-400 font-medium">Pullout Percentage</div>
+                  <div class="text-lg font-bold text-slate-800 dark:text-white mt-0.5">0 %</div>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-wallet"></i></div>
+                <div class="pt-2 pl-1">
+                  <div class="text-[11px] text-gray-400 font-medium">Collection Percentage</div>
+                  <div class="text-lg font-bold text-slate-800 dark:text-white mt-0.5">0 %</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: 3 Order Tracking Cards (Span 5 Columns) -->
+            <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-cart-flatbed"></i></div>
+                <div class="pt-2 pl-1">
+                  <div class="text-[11px] text-gray-400 font-medium">Total Orders</div>
+                  <div id="metric-total-orders" class="text-lg font-bold text-slate-800 dark:text-white mt-0.5">0</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:contents">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                  <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                  <div class="pt-2 pl-1">
+                    <div class="text-[11px] text-gray-400 font-medium">Pending Orders</div>
+                    <div id="metric-pending-orders" class="text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5">0</div>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm relative mt-3">
+                  <div class="absolute -top-4 left-4 w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md text-sm"><i class="fa-solid fa-truck-fast"></i></div>
+                  <div class="pt-2 pl-1">
+                    <div class="text-[11px] text-gray-400 font-medium">Delivered Orders</div>
+                    <div id="metric-delivered-orders" class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Overview Chart Section -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-6 shadow-sm relative">
+            <div class="mb-4">
+              <button id="chart-toggle-btn" class="text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-white focus:outline-none p-1.5 rounded-lg bg-gray-50 dark:bg-slate-700/50 transition border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-center" title="Minimize / Expand Chart">
+                <i id="chart-toggle-icon" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+              </button>
+            </div>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-sm font-bold text-slate-800 dark:text-white">Monthly Overview</h2>
+            </div>
+            <div id="chart-container" class="transition-all duration-300">
+              <div class="relative h-64 sm:h-72 w-full">
+                <canvas id="overviewChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sales Orders Tracking -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-6 shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-sm font-bold text-slate-800 dark:text-white">System-Wide Live Sales Orders Tracking</h2>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="text-gray-400 border-b border-gray-100 dark:border-slate-700">
+                    <th class="pb-3 font-semibold">Order ID</th>
+                    <th class="pb-3 font-semibold">Customer</th>
+                    <th class="pb-3 font-semibold">Date</th>
+                    <th class="pb-3 font-semibold">Tracking</th>
+                    <th class="pb-3 font-semibold">Status</th>
+                    <th class="pb-3 font-semibold text-right">Order Total</th>
+                  </tr>
+                </thead>
+                <tbody id="sales-orders-tbody" class="divide-y divide-gray-100 dark:divide-slate-700">
+                  <tr>
+                    <td colspan="6" class="py-6 text-center text-gray-400 italic">
+                      No active orders found in the system monitor.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPROVAL VIEW -->
+        <div id="view-approval" class="space-y-6 hidden">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Order Approval Module</h1>
+              <p class="text-xs text-gray-400 mt-1">Suriin ang order form na may pirma at bilang ng order kung tama, pagkatapos ay i-click ang Done to Complete.</p>
+            </div>
+            <span class="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 px-3 py-1.5 rounded-lg font-semibold">Approval</span>
+          </div>
+
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b pb-3 border-gray-100 dark:border-slate-700">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white">School: St. Jude Academy</h3>
+                <p class="text-xs text-gray-400">Signed Form Attached | Ready for review</p>
+              </div>
+              <span class="px-2.5 py-1 bg-amber-100 text-amber-700 dark:text-amber-300 text-[11px] font-bold rounded-lg">Pending Approval</span>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+              <button onclick="alert('Order Approved and marked as Complete (Green)!')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow transition flex items-center">
+                <i class="fa-solid fa-check mr-2"></i> Done to Complete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTHER VIEWS PLACEHOLDER -->
+        <div id="view-picklist" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">Picklist Module</h1></div></div>
+        <div id="view-packing" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">Packing List Module</h1></div></div>
+        <div id="view-packing-list-maker" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">DR & Label Maker</h1></div></div>
+        <div id="view-delivery" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">Delivery Tracking</h1></div></div>
+        <div id="view-courier" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">Courier Partners</h1></div></div>
+        <div id="view-order-form" class="space-y-6 hidden"><div class="bg-white dark:bg-slate-800 p-6 rounded-2xl"><h1 class="text-xl font-bold">Order Form Entry</h1></div></div>
+
+      </main>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const storedName = localStorage.getItem("admin_name") || "Marian";
+        const storedRole = localStorage.getItem("admin_role") || "Input order";
+        const storedInitials = localStorage.getItem("admin_initials") || "MA";
+
+        document.getElementById("header-user-name").textContent = storedName;
+        document.getElementById("header-user-role").textContent = `(${storedRole})`;
+        document.getElementById("user-avatar").textContent = storedInitials;
+
+        const isEllaine = (storedRole === "Approver" || storedName === "Ellaine");
+        const navContainer = document.getElementById("dynamic-nav");
+
+        if (navContainer) {
+          if (isEllaine) {
+            navContainer.innerHTML = `
+              <div class="nav-section-title px-3 py-1 font-bold text-blue-300/60 uppercase tracking-wider text-[10px] mb-2">OVERVIEW</div>
+              <a href="#" id="nav-dashboard" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-blue-600 text-white font-medium shadow-md mb-3"><i class="fa-solid fa-chart-pie w-5 text-center"></i><span class="nav-text">Dashboard Monitor</span></a>
+              <div class="nav-section-title px-3 py-1 font-bold text-blue-300/60 uppercase tracking-wider text-[10px] mb-2">APPROVAL</div>
+              <a href="#" id="nav-approval" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-circle-check w-5 text-center"></i><span class="nav-text">Approval</span></a>
+            `;
+          } else {
+            navContainer.innerHTML = `
+              <div class="nav-section-title px-3 py-1 font-bold text-blue-300/60 uppercase tracking-wider text-[10px] mb-2">SYSTEM MONITORING</div>
+              <a href="#" id="nav-dashboard" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-blue-600 text-white font-medium shadow-md mb-3"><i class="fa-solid fa-chart-pie w-5 text-center"></i><span class="nav-text">Dashboard (Live)</span></a>
+              <div class="nav-section-title px-3 py-1 font-bold text-blue-300/60 uppercase tracking-wider text-[10px] mb-2">OPERATIONS</div>
+              <a href="#" id="nav-order-form" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-file-lines w-5 text-center"></i><span class="nav-text">Order Form</span></a>
+              <a href="#" id="nav-picklist" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-list-check w-5 text-center"></i><span class="nav-text">Picklist</span></a>
+              <a href="#" id="nav-packing" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-box-archive w-5 text-center"></i><span class="nav-text">Packing List</span></a>
+              <a href="#" id="nav-packing-maker" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-file-invoice w-5 text-center"></i><span class="nav-text">DR & Label Maker</span></a>
+              <a href="#" id="nav-delivery" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-truck-fast w-5 text-center"></i><span class="nav-text">Delivery</span></a>
+              <a href="#" id="nav-courier" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-blue-800/50 transition text-slate-100 font-medium"><i class="fa-solid fa-motorcycle w-5 text-center"></i><span class="nav-text">Courier</span></a>
+            `;
+          }
+        }
+
+        // MOBILE SIDEBAR TOGGLE LOGIC
+        const sidebar = document.getElementById("sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const btnMobileMenu = document.getElementById("btn-mobile-menu");
+        const btnToggleCollapse = document.getElementById("btn-toggle-collapse");
+        const sidebarLogo = document.getElementById("sidebar-logo");
+        let isCollapsed = false;
+
+        function toggleMobileSidebar() {
+          sidebar.classList.toggle("-translate-x-full");
+          sidebarOverlay.classList.toggle("hidden");
+        }
+
+        btnMobileMenu?.addEventListener("click", toggleMobileSidebar);
+        sidebarOverlay?.addEventListener("click", toggleMobileSidebar);
+
+        // Desktop Collapse Toggle
+        btnToggleCollapse?.addEventListener("click", () => {
+          if (window.innerWidth >= 768) {
+            isCollapsed = !isCollapsed;
+            sidebar.style.width = isCollapsed ? "76px" : "256px";
+            document.querySelectorAll(".nav-section-title, .nav-text").forEach(el => el.classList.toggle("hidden", isCollapsed));
+            sidebarLogo.style.display = isCollapsed ? "none" : "block";
+          } else {
+            toggleMobileSidebar();
+          }
+        });
+
+        // DROPDOWN TOGGLE MODALS
+        const btnEmail = document.getElementById("btn-email-notif");
+        const dropdownEmail = document.getElementById("dropdown-email");
+        const btnAlerts = document.getElementById("btn-alerts-notif");
+        const dropdownAlerts = document.getElementById("dropdown-alerts");
+
+        btnEmail?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          dropdownAlerts?.classList.add("hidden");
+          dropdownEmail?.classList.toggle("hidden");
+        });
+
+        btnAlerts?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          dropdownEmail?.classList.add("hidden");
+          dropdownAlerts?.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", () => {
+          dropdownEmail?.classList.add("hidden");
+          dropdownAlerts?.classList.add("hidden");
+        });
+
+        // TAB SWITCHING
+        const views = {
+          "nav-dashboard": document.getElementById("view-dashboard"),
+          "nav-approval": document.getElementById("view-approval"),
+          "nav-picklist": document.getElementById("view-picklist"),
+          "nav-packing": document.getElementById("view-packing"),
+          "nav-packing-maker": document.getElementById("view-packing-list-maker"),
+          "nav-delivery": document.getElementById("view-delivery"),
+          "nav-courier": document.getElementById("view-courier"),
+          "nav-order-form": document.getElementById("view-order-form")
+        };
+
+        Object.keys(views).forEach(navId => {
+          const navElem = document.getElementById(navId);
+          navElem?.addEventListener("click", (e) => {
+            e.preventDefault();
+            Object.values(views).forEach(v => v?.classList.add("hidden"));
+            views[navId]?.classList.remove("hidden");
+            document.querySelectorAll("#dynamic-nav a").forEach(a => a.classList.remove("bg-blue-600", "shadow-md"));
+            navElem.classList.add("bg-blue-600", "shadow-md");
+
+            if (window.innerWidth < 768 && !sidebar.classList.contains("-translate-x-full")) {
+              toggleMobileSidebar();
+            }
+          });
+        });
+
+        document.getElementById("btn-logout")?.addEventListener("click", () => {
+          localStorage.clear();
+          window.location.href = "admin.html";
+        });
+
+        const themeToggleBtn = document.getElementById("theme-toggle");
+        const darkIcon = document.getElementById("theme-toggle-dark-icon");
+        const lightIcon = document.getElementById("theme-toggle-light-icon");
+
+        function updateIcons() {
+          const isDark = document.documentElement.classList.contains("dark");
+          darkIcon?.classList.toggle("hidden", isDark);
+          lightIcon?.classList.toggle("hidden", !isDark);
+        }
+
+        if (localStorage.getItem("color-theme") === "dark" || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        updateIcons();
+
+        themeToggleBtn?.addEventListener("click", () => {
+          document.documentElement.classList.toggle("dark");
+          localStorage.setItem("color-theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+          updateIcons();
+        });
+
+        // CHART INIT
+        const ctx = document.getElementById("overviewChart");
+        if (ctx) {
+          new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+              datasets: [{
+                label: "Inventory Delivery Flow",
+                data: [0, 0, 0, 0, 0, 0],
+                borderColor: "#2563eb",
+                backgroundColor: "rgba(37, 99, 235, 0.05)",
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, suggestedMax: 10 } }
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
